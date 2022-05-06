@@ -17,7 +17,7 @@ class Graph(redisgraph.Graph):
             query += str(node) + ','
 
         # Discard leading comma.
-        if query[-1] is ',':
+        if query[-1] == ',':
             query = query[:-1]
 
         query += ' CREATE '
@@ -25,7 +25,7 @@ class Graph(redisgraph.Graph):
         query += ','.join([str(edge) for edge in self.edges])
 
         # Discard leading comma.
-        if query[-1] is ',':
+        if query[-1] == ',':
             query = query[:-1]
 
         return self.query(query)

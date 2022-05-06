@@ -51,10 +51,11 @@ def load_in_redis(rdf_graph, redis_graph: RedisGraph):
     redis_graph.flush_edges()
 
 
-def rdf_load(rdf_file: str, redis_graph_name: str, redis_host: str, redis_port: int, rdf_format=None):
+def rdf_load(rdf_file: str, redis_graph_name: str, redis_host="localhost", redis_port=6379, rdf_format=None):
     rdf_graph = load_rdf_graph(rdf_file, rdf_format)
 
     redis_connector = Redis(host=redis_host, port=redis_port)
     redis_graph = RedisGraph(redis_graph_name, redis_connector)
 
     load_in_redis(rdf_graph, redis_graph)
+    return redis_graph
