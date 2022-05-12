@@ -1,9 +1,9 @@
-import redisgraph
+from redis.commands.graph import Graph as RedisGraph
 
 
-class Graph(redisgraph.Graph):
-    def __init__(self, name, redis_con):
-        super().__init__(name, redis_con)
+class Graph(RedisGraph):
+    def __init__(self, redis_con, name):
+        super().__init__(redis_con, name)
 
     def commit_edges(self):
         """

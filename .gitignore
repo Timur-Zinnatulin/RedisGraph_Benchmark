@@ -129,3 +129,7 @@ dmypy.json
 .pyre/
 
 result
+
+dump.rdb
+load_from_dataset.py
+*.zip

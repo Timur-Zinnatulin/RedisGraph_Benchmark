@@ -9,6 +9,7 @@ def load_triplets(filename: str):
         for line in file:
             try:
                 subj, obj, pred = line[:-1].split()
+                pred = pred.replace('-', '_')
                 triplets.append((subj, obj, pred))
             except ValueError:
                 continue
