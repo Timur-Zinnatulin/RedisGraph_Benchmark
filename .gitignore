@@ -133,3 +133,4 @@ result
 dump.rdb
 load_from_dataset.py
 *.zip
+data
