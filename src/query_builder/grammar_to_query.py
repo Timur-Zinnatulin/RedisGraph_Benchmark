@@ -11,10 +11,3 @@ def single_source(id: int):
 
 def multiple_source(chunk: list):
     return f"MATCH (a)-/ ~S /->() WHERE a.value IN {chunk} RETURN COUNT(*)"
-
-#PATH PATTERN S = ()-/ :A :B* :C*/->() MATCH ()-/ ~S /->() RETURN COUNT(*)
-#PATH PATTERN SA = ()-/ () | [:A ~SA] /->() PATH PATTERN SB = ()-/ () | [:B ~SB] /->() MATCH ()-/ ~SA ~SB /->() RETURN COUNT(*)
-
-#cfpq_quijpers: 226669749 matches, 385.99 366.62 362.12 364.96 361.52 | 140.81 140.42 141.13
-
-#redis-server --loadmodule /usr/lib/redis/modules/redisgraph.so &

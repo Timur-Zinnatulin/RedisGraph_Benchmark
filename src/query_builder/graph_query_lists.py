@@ -1,7 +1,7 @@
 from .grammar_to_query import *
 
-RDF_GRAPHS = [#"core", "pathways", "go_hierarchy", "enzyme", "eclass", 
-"taxonomy"]#, "geospecies", "go"]
+RDF_GRAPHS = ["core", "pathways", "go_hierarchy", "enzyme", "eclass", 
+            "geospecies", "go", "taxonomy"]
 MEMORY_ALIAS_GRAPHS = ["apache", "init", "mm", "ipc", "lib", "block", "arch",
                         "crypto", "security", "sound", "net", "fs", "drivers", "postgre", "kernel"]
 JAVA_GRAPHS = ["avrora", "batik", "eclipse", "fop", "h2", "jython", "luindex", "lusearch", "pmd",
