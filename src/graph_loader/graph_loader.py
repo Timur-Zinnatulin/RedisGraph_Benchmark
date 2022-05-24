@@ -1,15 +1,18 @@
-import hashlib
-
 from redis import Redis
 from redis.commands.graph import Node as RedisNode, Edge as RedisEdge
-#from redisgraph import Node as RedisNode, Edge as RedisEdge
 from tqdm import tqdm
 
 from .graph import Graph as RedisGraph
 from .triplet_loader import load_rdf_graph
 
 BLOCK_SIZE = 100
-IMPORTANT_EDGE_LABELS = ["subClassOf", "type", "broaderTransitive", "A", "D"]
+
+# This module exists for when you can't use bulk loader
+# Due to the structure of your data
+# To use: substitute the line
+### load(graph, data)
+# with line
+### rdf_load(redis_con, path, graph)
 
 def make_node(value: str, alias=None):
     return RedisNode(
@@ -38,7 +41,7 @@ def load_in_redis(rdf_graph, redis_graph: RedisGraph):
 
     #print('Add edges to existing nodes')
     for subj, obj, pred in tqdm(rdf_graph):
-        edge = RedisEdge(all_nodes[subj], (pred if pred in IMPORTANT_EDGE_LABELS else "other"), all_nodes[obj])
+        edge = RedisEdge(all_nodes[subj], pred, all_nodes[obj])
         redis_graph.add_node(all_nodes[subj])
         redis_graph.add_node(all_nodes[obj])
         redis_graph.add_edge(edge)
