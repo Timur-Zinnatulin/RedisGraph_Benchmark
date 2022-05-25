@@ -9,7 +9,7 @@ from redis.exceptions import ConnectionError as RedisError
 from redis.commands.graph import Graph
 import subprocess
 
-PATH_TO_HERE = Path.cwd().resolve().parent.parent
+PATH_TO_HERE = Path.cwd().resolve()
 
 # Insert path to folder with graphs here
 PATH_TO_GRAPHS = f"{PATH_TO_HERE}/data/Graphs"
@@ -27,38 +27,37 @@ def load_graph(graph: str, path: str):
     if graph in RDF_DATA[0]:
         if graph in ['geospecies', 'enzyme']:
             subprocess.run([
-                "redisgraph-bulk-insert", graph, "-n", path+"_nodes.csv",
-                "-R", "type", path+"_type.csv",
-                "-R", "subClassOf", path+"_subClassOf.csv",
-                "-R", "broaderTransitive", path+"_broaderTransitive.csv",
-                "-R", "other", path+"_other.csv"])
+                "redisgraph-bulk-insert", graph, "-n", path+f"/{graph}_nodes.csv",
+                "-R", "type", path+f"/{graph}_type.csv",
+                "-R", "subClassOf", path+f"/{graph}_subClassOf.csv",
+                "-R", "broaderTransitive", path+f"/{graph}_broaderTransitive.csv",
+                "-R", "other", path+f"/{graph}_other.csv"])
         else:
             subprocess.run([
-                "redisgraph-bulk-insert", graph, "-n", path+"_nodes.csv",
-                "-R", "type", path+"_type.csv",
-                "-R", "subClassOf", path+"_subClassOf.csv",
-                "-R", "other", path+"_other.csv"])
+                "redisgraph-bulk-insert", graph, "-n", path+f"/{graph}_nodes.csv",
+                "-R", "type", path+f"/{graph}_type.csv",
+                "-R", "subClassOf", path+f"/{graph}_subClassOf.csv",
+                "-R", "other", path+f"/{graph}_other.csv"])
     else:
         subprocess.run([
-            "redisgraph-bulk-insert", graph, "-n", path+"_nodes.csv",
-            "-R", "A", path+"_A.csv",
-            "-R", "subClassOf", path+"_D.csv",
-            "-R", "other", path+"_other.csv"])
+            "redisgraph-bulk-insert", graph, "-n", path+f"/{graph}_nodes.csv",
+            "-R", "A", path+f"/{graph}_A.csv",
+            "-R", "subClassOf", path+f"/{graph}_D.csv",
+            "-R", "other", path+f"/{graph}_other.csv"])
 
 def run_benchmark_all_pairs():
     queries_rdf = ["g1", "g2", "geo"]
     query_pt = ["pointsTo"]
     for graph in RDF_DATA[0] + MEMORY_ALIAS_DATA[0]:
-        path = f"{PATH_TO_GRAPHS}/{graph}/{graph}"
+        path = f"{PATH_TO_GRAPHS}/{graph}"
         if not os.path.exists(path):
             continue
-
         subprocess.run([PATH_TO_REDIS + "src/redis-server", PATH_TO_REDIS + "redis.conf", "--daemonize", "yes"])
         pool = redis.ConnectionPool(host='localhost', port=6379)
         redis_con = redis.Redis(connection_pool=pool)
 
         load_graph(graph, path)
-        redis_graph = Graph(graph)
+        redis_graph = Graph(redis_con, graph)
 
         try:
             for query, query_name in (zip(RDF_DATA[1], queries_rdf) if graph in RDF_DATA[0] else zip(MEMORY_ALIAS_DATA[1], query_pt)):
@@ -83,11 +82,11 @@ def run_benchmark_single_source():
     queries_rdf = ["g1", "g2", "geo"]
     query_pt = ["pointsTo"]
     for graph in RDF_DATA[0] + MEMORY_ALIAS_DATA[0]:
-        path = f"{PATH_TO_GRAPHS}/{graph}/{graph}"
+        path = f"{PATH_TO_GRAPHS}/{graph}"
         if not os.path.exists(path):
             continue
 
-        with open(f'{PATH_TO_HERE}/data/Chunk_1/{graph}.txt') as f:
+        with open(f'{PATH_TO_HERE}/data/Chunks/Chunk_1/{graph}.txt') as f:
             lines = [line[:-1] for line in f.readlines()]
 
         for query, query_name in (zip(RDF_DATA[1], queries_rdf) if graph in RDF_DATA[0] else zip(MEMORY_ALIAS_DATA[1], query_pt)):
@@ -97,7 +96,7 @@ def run_benchmark_single_source():
                 redis_con = redis.Redis(connection_pool=pool)
 
                 load_graph(graph, path)
-                redis_graph = Graph(graph)
+                redis_graph = Graph(redis_con, graph)
 
                 print(f"Running {query_name} on {graph}.")
 
@@ -112,6 +111,7 @@ def run_benchmark_single_source():
                         redis_con.script_flush()
             except RedisError:
                 print(f"Redis server crashed on graph '{graph}', single-source, continuing...")
+                continue
             redis_graph.delete()
             redis_con.flushall()
             redis_con.shutdown(nosave=True)
@@ -123,7 +123,7 @@ def run_benchmark_multiple_source():
     queries_rdf = ["g1", "g2", "geo"]
     query_pt = ["pointsTo"]
     for graph in RDF_DATA[0] + MEMORY_ALIAS_DATA[0]:
-        path = f"{PATH_TO_GRAPHS}/{graph}/{graph}"
+        path = f"{PATH_TO_GRAPHS}/{graph}"
         if not os.path.exists(path):
             continue
 
@@ -133,9 +133,9 @@ def run_benchmark_multiple_source():
             redis_con = redis.Redis(connection_pool=pool)
 
             load_graph(graph, path)
-            redis_graph = Graph(graph)
+            redis_graph = Graph(redis_con, graph)
 
-            with open(f'{PATH_TO_HERE}/data/Chunk_{chunk_size}/{graph}.txt') as f:
+            with open(f'{PATH_TO_HERE}/data/Chunks/Chunk_{chunk_size}/{graph}.txt') as f:
                 lines = [line[:-1] for line in f.readlines()]
             try:
                 for query, query_name in (zip(RDF_DATA[1], queries_rdf) if graph in RDF_DATA[0] else zip(MEMORY_ALIAS_DATA[1], query_pt)):

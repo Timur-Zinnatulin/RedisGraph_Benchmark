@@ -79,19 +79,18 @@ if __name__ == '__main__':
 
     path = Path("./data/Graphs").resolve()
 
-    match graph_name:
-        case "rdf":
-            print("Loading RDF graphs")
-            load_set_of_graphs(RDF_GRAPHS)
-        case "memoryaliases":
-            print("Loading MemoryAliases graphs")
-            load_set_of_graphs(MEMORY_ALIAS_GRAPHS)
-        case "all":
-            print("Loading all evaluatable graphs")
-            load_set_of_graphs(RDF_GRAPHS)
-            load_set_of_graphs(MEMORY_ALIAS_GRAPHS)
-        case _:
-            if graph_name in cfpq_data.DATASET:
-                load_set_of_graphs([graph_name])
-            else:
-                print("Please specify graph or set of graphs (rdf, memoryaliases)")
+    if graph_name == "rdf":
+        print("Loading RDF graphs")
+        load_set_of_graphs(RDF_GRAPHS)
+    elif graph_name == "memoryaliases":
+        print("Loading MemoryAliases graphs")
+        load_set_of_graphs(MEMORY_ALIAS_GRAPHS)
+    elif graph_name == "all":
+        print("Loading all evaluatable graphs")
+        load_set_of_graphs(RDF_GRAPHS)
+        load_set_of_graphs(MEMORY_ALIAS_GRAPHS)
+    else:
+        if graph_name in cfpq_data.DATASET:
+            load_set_of_graphs([graph_name])
+        else:
+            print("Please specify graph or set of graphs (rdf, memoryaliases)")

@@ -14,14 +14,8 @@ Select query scenario (all-pairs, ss, ms)
 
 def main():
     parser = ArgumentParser('Run benchmarks for RedisGraph')
-    parser.add_argument('RDF_PATH', help='rdf graph path')
-    parser.add_argument('--name', help='graph name', default=None)
-    parser.add_argument('--host', help='redis host name', default='localhost')
-    parser.add_argument('--port', help='redis port', default=6379)
     parser.add_argument('--scenario', help='CFPQ run scenario (all-pairs, single-source or multiple-source)', default=None)
     args = parser.parse_args()
-
-    # graph_name = args.graph_name if args.name is not None else pathlib.Path(args.RDF_PATH).name
 
     if (args.scenario == 'all-pairs'):
         print("Running all-pairs scenario...")
