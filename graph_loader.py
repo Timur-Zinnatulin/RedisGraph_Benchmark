@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 import cfpq_data
 import numpy as np
+from src.query_builder.graph_query_lists import RDF_GRAPHS, MEMORY_ALIAS_GRAPHS
 
 
 def generate_nodes(path_to_dir, file_name, node_number):
@@ -26,6 +27,16 @@ def graph_to_csv(graph_name, path_to_dir, graph_path):
     path_to_dir.mkdir(parents=True, exist_ok=True)
 
     csv_files = dict()
+
+    if (graph_name in RDF_GRAPHS):
+        if (graph_name in ['geospecies', 'enzyme']):
+            relationships = ['subClassOf', 'type', 'broaderTransitive']
+        else:
+            relationships = ['subClassOf', 'type']
+
+    elif (graph_name in MEMORY_ALIAS_GRAPHS):
+        relationships = ['A', 'D']
+
     for relationship in relationships + ["other"]:
         csv_file = path_to_dir / f"{graph_name}_{relationship}.csv"
         csv_files[relationship] = csv_file
@@ -46,6 +57,12 @@ def graph_to_csv(graph_name, path_to_dir, graph_path):
 
     return csv_files
 
+def load_set_of_graphs(collection: list):
+    for graph_name in collection:
+        path_to_graph = cfpq_data.download(graph_name)
+        graph = cfpq_data.graph_from_csv(path_to_graph)
+        graph_to_csv(graph_name, f"{path}/" + graph_name, path_to_graph)
+        generate_nodes(f"{path}/" + graph_name, graph_name, graph.number_of_nodes())
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -56,19 +73,25 @@ if __name__ == '__main__':
         , type=str
         , help='graph name'
     )
-    #parser.add_argument(
-    #    '--relationships'
-    #    , required=True
-    #    , type=str
-    #    , help='comma separated list of relationships'
-    #)
     args = parser.parse_args()
 
     graph_name = args.graph
-    relationships = args.relationships.split(',')
 
-    path = Path(".").parent.resolve()
-    path_to_graph = cfpq_data.download(graph_name)
-    graph = cfpq_data.graph_from_csv(path_to_graph)
-    graph_to_csv(graph_name, f"{path}/" + graph_name, path_to_graph)
-    generate_nodes(f"{path}/" + graph_name, graph_name, graph.number_of_nodes())
+    path = Path("./data/Graphs").resolve()
+
+    match graph_name:
+        case "rdf":
+            print("Loading RDF graphs")
+            load_set_of_graphs(RDF_GRAPHS)
+        case "memoryaliases":
+            print("Loading MemoryAliases graphs")
+            load_set_of_graphs(MEMORY_ALIAS_GRAPHS)
+        case "all":
+            print("Loading all evaluatable graphs")
+            load_set_of_graphs(RDF_GRAPHS)
+            load_set_of_graphs(MEMORY_ALIAS_GRAPHS)
+        case _:
+            if graph_name in cfpq_data.DATASET:
+                load_set_of_graphs([graph_name])
+            else:
+                print("Please specify graph or set of graphs (rdf, memoryaliases)")

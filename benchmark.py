@@ -1,5 +1,5 @@
-from Coding.RedisGraph_Benchmark.src.query_runner.runner import run_benchmark_all_pairs, run_benchmark_multiple_source, run_benchmark_single_source
-from src import query_runner
+from src.query_runner.runner import run_benchmark_all_pairs,\
+     run_benchmark_multiple_source, run_benchmark_single_source
 from argparse import ArgumentParser
 
 """

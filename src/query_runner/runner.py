@@ -1,6 +1,7 @@
 import csv
 from tqdm import tqdm
 from pathlib import Path
+import os
 from src import RDF_DATA, MEMORY_ALIAS_DATA
 from src import all_pairs, single_source, multiple_source
 import redis
@@ -8,10 +9,11 @@ from redis.exceptions import ConnectionError as RedisError
 from redis.commands.graph import Graph
 import subprocess
 
-# Insert path to folder with graphs here
-PATH_TO_GRAPHS = "/home/jblab/projects/Timur/LoadGraphCSV"
+PATH_TO_HERE = Path.cwd().resolve().parent.parent
 
-# Or load them with CFPQ_Data
+# Insert path to folder with graphs here
+PATH_TO_GRAPHS = f"{PATH_TO_HERE}/data/Graphs"
+
 
 # Insert path to redis here
 PATH_TO_REDIS = "/home/jblab/projects/Timur/redis/"
@@ -44,11 +46,13 @@ def load_graph(graph: str, path: str):
             "-R", "other", path+"_other.csv"])
 
 def run_benchmark_all_pairs():
-    path_to_here = Path.cwd().resolve().parent.parent
     queries_rdf = ["g1", "g2", "geo"]
     query_pt = ["pointsTo"]
     for graph in RDF_DATA[0] + MEMORY_ALIAS_DATA[0]:
-        path = f"{PATH_TO_GRAPHS}/{graph}/{graph}.csv"
+        path = f"{PATH_TO_GRAPHS}/{graph}/{graph}"
+        if not os.path.exists(path):
+            continue
+
         subprocess.run([PATH_TO_REDIS + "src/redis-server", PATH_TO_REDIS + "redis.conf", "--daemonize", "yes"])
         pool = redis.ConnectionPool(host='localhost', port=6379)
         redis_con = redis.Redis(connection_pool=pool)
@@ -59,8 +63,8 @@ def run_benchmark_all_pairs():
         try:
             for query, query_name in (zip(RDF_DATA[1], queries_rdf) if graph in RDF_DATA[0] else zip(MEMORY_ALIAS_DATA[1], query_pt)):
                 print(f"Running {query_name} on {graph}, all-pairs.")
-                Path(f'{path_to_here}/result/batch_16/all-pairs/{query_name}').mkdir(parents=True, exist_ok=True)
-                with open(f'{path_to_here}/result/batch_16/all-pairs/{query_name}/{graph}_{query_name}.csv', 'w') as file:
+                Path(f'{PATH_TO_HERE}/result/batch_16/all-pairs/{query_name}').mkdir(parents=True, exist_ok=True)
+                with open(f'{PATH_TO_HERE}/result/batch_16/all-pairs/{query_name}/{graph}_{query_name}.csv', 'w') as file:
                     writer = csv.writer(file, delimiter=' ', quoting=csv.QUOTE_MINIMAL)
                     writer.writerow(['answer', 'time'])
                     for runs in tqdm(range(MULT_SOURCE_QUERY_AMOUNT)):
@@ -76,13 +80,15 @@ def run_benchmark_all_pairs():
         redis_con.shutdown(nosave=True)
 
 def run_benchmark_single_source():
-    path_to_here = Path.cwd().resolve().parent.parent
     queries_rdf = ["g1", "g2", "geo"]
     query_pt = ["pointsTo"]
     for graph in RDF_DATA[0] + MEMORY_ALIAS_DATA[0]:
-        with open(f'{path_to_here}/data/Chunk_1/{graph}.txt') as f:
-            lines = [line[:-1] for line in f.readlines()]
         path = f"{PATH_TO_GRAPHS}/{graph}/{graph}"
+        if not os.path.exists(path):
+            continue
+
+        with open(f'{PATH_TO_HERE}/data/Chunk_1/{graph}.txt') as f:
+            lines = [line[:-1] for line in f.readlines()]
 
         for query, query_name in (zip(RDF_DATA[1], queries_rdf) if graph in RDF_DATA[0] else zip(MEMORY_ALIAS_DATA[1], query_pt)):
             try:
@@ -95,8 +101,8 @@ def run_benchmark_single_source():
 
                 print(f"Running {query_name} on {graph}.")
 
-                Path(f'{path_to_here}/result/batch_16/Chunk_1/{query_name}').mkdir(parents=True, exist_ok=True)
-                with open(f'{path_to_here}/result/batch_16/Chunk_1/{query_name}/{graph}_{query_name}.csv', 'w') as file:
+                Path(f'{PATH_TO_HERE}/result/batch_16/Chunk_1/{query_name}').mkdir(parents=True, exist_ok=True)
+                with open(f'{PATH_TO_HERE}/result/batch_16/Chunk_1/{query_name}/{graph}_{query_name}.csv', 'w') as file:
                     writer = csv.writer(file, delimiter=' ', quoting=csv.QUOTE_MINIMAL)
                     writer.writerow(['answer', 'time'])
 
@@ -114,11 +120,12 @@ def run_benchmark_single_source():
 
 
 def run_benchmark_multiple_source():
-    path_to_here = Path.cwd().resolve().parent.parent
     queries_rdf = ["g1", "g2", "geo"]
     query_pt = ["pointsTo"]
     for graph in RDF_DATA[0] + MEMORY_ALIAS_DATA[0]:
-        path = f"{PATH_TO_GRAPHS}/{graph}/{graph}.csv"
+        path = f"{PATH_TO_GRAPHS}/{graph}/{graph}"
+        if not os.path.exists(path):
+            continue
 
         for chunk_size in MULTIPLE_SOURCE_CHUNKS:
             subprocess.run([PATH_TO_REDIS + "src/redis-server", PATH_TO_REDIS + "redis.conf", "--daemonize", "yes"])
@@ -128,13 +135,13 @@ def run_benchmark_multiple_source():
             load_graph(graph, path)
             redis_graph = Graph(graph)
 
-            with open(f'{path_to_here}/data/Chunk_{chunk_size}/{graph}.txt') as f:
+            with open(f'{PATH_TO_HERE}/data/Chunk_{chunk_size}/{graph}.txt') as f:
                 lines = [line[:-1] for line in f.readlines()]
             try:
                 for query, query_name in (zip(RDF_DATA[1], queries_rdf) if graph in RDF_DATA[0] else zip(MEMORY_ALIAS_DATA[1], query_pt)):
                     print(f"Running {query_name} on {graph}, chunk size {chunk_size}.")
-                    Path(f'{path_to_here}/result/batch_16/Chunk_{chunk_size}/{query_name}').mkdir(parents=True, exist_ok=True)
-                    with open(f'{path_to_here}/result/batch_16/Chunk_{chunk_size}/{query_name}/{graph}_{query_name}.csv', 'w') as file:
+                    Path(f'{PATH_TO_HERE}/result/batch_16/Chunk_{chunk_size}/{query_name}').mkdir(parents=True, exist_ok=True)
+                    with open(f'{PATH_TO_HERE}/result/batch_16/Chunk_{chunk_size}/{query_name}/{graph}_{query_name}.csv', 'w') as file:
                         writer = csv.writer(file, delimiter=' ', quoting=csv.QUOTE_MINIMAL)
                         writer.writerow(['answer', 'time'])
                         for runs in tqdm(range(MULT_SOURCE_QUERY_AMOUNT)):
