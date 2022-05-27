@@ -3,8 +3,8 @@
 Benchmark platform for experimental study of context-free path queries on RedisGraph database.
 
 ## Requirements
-+ Redis version >= 6.0.0
-+ RedisGraph modification from the YaccConstructor repository (don't forget --recurse-submodules)
++ [Redis](https://github.com/redis/redis) version >= 6.0.0
++ RedisGraph modification from the [YaccConstructor](https://github.com/YaccConstructor/RedisGraph) repository (don't forget --recurse-submodules)
 + [redisgraph-bulk-loader](https://github.com/RedisGraph/redisgraph-bulk-loader) for optimal graph loading
 
 ## How to use
