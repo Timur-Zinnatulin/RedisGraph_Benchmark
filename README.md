@@ -15,16 +15,22 @@ Benchmark platform for experimental study of context-free path queries on RedisG
 
 ## How to load graphs
 ```
-$ python3 ./graph_loader.py -h
+$ python3 ./graph_loader.py --graph [GRAPH_NAME || SET_OF_GRAPHS]
 ```
 ### Example
+Single graph:
+```
+$ python3 ./graph_loader.py --graph geospecies
+```
+
+Set of graphs:
 ```
 $ python3 ./graph_loader.py --graph rdf
 ```
 
 ## How to launch benchmarks
 ```
-$ python3 ./benchmark.py -h
+$ python3 ./benchmark.py --scenario [QUERY_TYPE]
 ```
 ### Example
 ```
