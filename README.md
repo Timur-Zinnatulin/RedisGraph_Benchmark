@@ -22,11 +22,10 @@ $ python3 ./graph_loader.py -h
 $ python3 ./graph_loader.py --graph rdf
 ```
 
-# How to launch benchmarks
+## How to launch benchmarks
 ```
 $ python3 ./benchmark.py -h
 ```
-
 ### Example
 ```
 $ python3 ./benchmark.py --scenario all-pairs
