@@ -1,0 +1,5 @@
+cfpq_data==2.0.0
+numpy==1.22.3
+rdflib==6.0.0
+redis==4.3.1
+tqdm==4.64.0

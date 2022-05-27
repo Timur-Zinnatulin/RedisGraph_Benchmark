@@ -55,6 +55,7 @@ def run_benchmark_all_pairs():
         subprocess.run([PATH_TO_REDIS + "src/redis-server", PATH_TO_REDIS + "redis.conf", "--daemonize", "yes"])
         pool = redis.ConnectionPool(host='localhost', port=6379)
         redis_con = redis.Redis(connection_pool=pool)
+        redis_con.config_set("CACHE_SIZE", 100000)
 
         load_graph(graph, path)
         redis_graph = Graph(redis_con, graph)
